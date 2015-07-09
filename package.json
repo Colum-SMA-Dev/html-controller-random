@@ -19,10 +19,14 @@
   "dependencies": {
     "debug": "^2.2.0",
     "html-controller": "^1.0.0",
+    "inherits": "^2.0.1",
     "lodash": "^3.10.0",
-    "tag-matcher": "git://github.com/Colum-SMA-Dev/tag-matcher",
+    "tag-matcher": "git://github.com/Colum-SMA-Dev/tag-matcher"
   },
   "devDependencies": {
+    "chai": "^3.0.0",
+    "chance": "^0.7.6",
+    "lodash-deep": "^1.6.0",
     "mocha": "^2.2.5"
   }
 }

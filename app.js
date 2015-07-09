@@ -2,6 +2,7 @@
 
 var htmlController = require('html-controller')();
 
+
 htmlController.on('connection', function(socket) {
     socket.on('playScene', function(sceneId, callback) {
         htmlController.hub.emit('loadScene', sceneId, function(err, scene) {

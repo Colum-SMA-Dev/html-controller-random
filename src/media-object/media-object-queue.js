@@ -1,11 +1,8 @@
 'use strict';
 
 var _ = require('lodash');
-var TagMatcher = require('../tag-matcher');
-var ImageMediaObject = require('./image-media-object');
-var VideoMediaObject = require('./video-media-object');
-var TextMediaObject = require('./text-media-object');
-var AudioMediaObject = require('./audio-media-object');
+var TagMatcher = require('tag-matcher');
+
 
 var SCENE_PROP_DEFAULTS = {
     displayInterval: 3,
