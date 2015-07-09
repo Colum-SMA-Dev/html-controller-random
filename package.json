@@ -1,0 +1,27 @@
+{
+  "name": "html-controller-random",
+  "version": "1.0.0",
+  "description": "Subset of the html-controller that triggers a \"humanized\" random display of media objects",
+  "main": "app.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Colum-SMA-Dev/html-controller-random.git"
+  },
+  "author": "Matt Schick <matt@schickm.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Colum-SMA-Dev/html-controller-random/issues"
+  },
+  "homepage": "https://github.com/Colum-SMA-Dev/html-controller-random",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "html-controller": "^1.0.0",
+    "lodash": "^3.10.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.5"
+  }
+}

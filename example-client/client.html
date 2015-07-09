@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Example client for HTMLController</title>
+        <style>
+            #step2 {
+                opacity: 0;
+                transition: opacity 0.5s;
+            }
+
+            #status {
+                color: red;
+            }
+
+            label {
+                display: block;
+            }
+
+            button {
+                margin: 0 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Example Client for HTMLController</h1>
+
+        
+        <h2>Step 1: Login to a hub</h2>
+        
+        <form id='login-form'>
+            <h3 id='status'></h3>
+            <label>Controller Url: <input type='url' name='url' required value='http://localhost:7000' /></label>
+            <input type='submit' id='submit' name='submit' />
+        </form>
+
+        <div id='step2'>
+            <h2>Step 2: Show Scene</h2>
+            <label>
+                <select id='scene-select'></select>
+            </label>    
+        </div>
+        
+
+        <!-- load socket.io library, this must match the server version on the HTMLController -->
+        <script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+
+        <script>
+            (function() {
+                'use strict';
+
+                var socket,
+                    currentScene,
+                    errorBox = document.querySelector('#status'),
+                    step2 = document.querySelector('#step2'),
+                    sceneSelect = document.querySelector('#scene-select'),
+                    submitBtn = document.querySelector('#submit');
+
+                /* SETUP EVENT LISTENERS */
+                document.querySelector('#login-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    errorBox.innerHTML = '';
+                    submitBtn.disabled = true;
+                    submitBtn.value = 'Logging in...';
+                    
+                    tryLogin(this.url.value);
+                    
+                });
+
+                sceneSelect.addEventListener('change', function(e) {
+                    socket.emit('loadScene', this.options[this.selectedIndex].value, function(err, scene) {
+                        socket.emit('playScene', scene._id);
+                        
+                    });
+                });
+
+                function tryLogin (url) {
+                    // connect  
+                    socket = io(url, {
+                        forceNew: true
+                    });
+
+                    socket.on('connect', function() {
+                        submitBtn.disabled = false;
+                        submitBtn.value = 'Submit';
+                        
+                        showScenes();
+                        listenForDisplayMessages();
+                    });
+                }
+
+                // update dropdown list to scene names
+                function showScenes () {
+                    // clear old options
+                    sceneSelect.innerHTML = '';
+
+                    socket.emit('listScenes', function(err, names) {
+                        // build new options with list of scenes in hub
+                        var opt = document.createElement('option');
+                        opt.innerHTML = 'Select a scene...';
+                        sceneSelect.appendChild(opt);
+
+                        for (var i = 0; i < names.length; i++) {
+                            opt = document.createElement('option');
+                            opt.value = names[i]._id;
+                            opt.innerHTML = names[i].name;
+                            sceneSelect.appendChild(opt);
+                        }
+
+                        step2.style.opacity = 1;
+                    });                     
+                }
+
+                function listenForDisplayMessages () {
+                    socket.on('showMedia', function(mediaObject) {
+                        console.dir(mediaObject);
+                    });
+                }
+
+                function showError (msg) {
+                    errorBox.innerHTML = msg.toString();
+                }
+                
+            }).call(this);
+            
+        </script>
+    </body>
+</html>
