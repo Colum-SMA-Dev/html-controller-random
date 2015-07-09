@@ -18,7 +18,7 @@
   "homepage": "https://github.com/Colum-SMA-Dev/html-controller-random",
   "dependencies": {
     "debug": "^2.2.0",
-    "html-controller": "^1.0.0",
+    "html-controller": "git://github.com/Colum-SMA-Dev/html-controller",
     "inherits": "^2.0.1",
     "lodash": "^3.10.0",
     "tag-matcher": "git://github.com/Colum-SMA-Dev/tag-matcher"
