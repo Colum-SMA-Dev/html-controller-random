@@ -19,7 +19,8 @@
   "dependencies": {
     "debug": "^2.2.0",
     "html-controller": "^1.0.0",
-    "lodash": "^3.10.0"
+    "lodash": "^3.10.0",
+    "tag-matcher": "git://github.com/Colum-SMA-Dev/tag-matcher",
   },
   "devDependencies": {
     "mocha": "^2.2.5"
