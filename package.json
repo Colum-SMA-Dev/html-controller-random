@@ -21,7 +21,8 @@
     "html-controller": "git://github.com/Colum-SMA-Dev/html-controller",
     "inherits": "^2.0.1",
     "lodash": "^3.10.0",
-    "tag-matcher": "git://github.com/Colum-SMA-Dev/tag-matcher"
+    "tag-matcher": "git://github.com/Colum-SMA-Dev/tag-matcher",
+    "timer-shim": "^0.3.0"
   },
   "devDependencies": {
     "chai": "^3.0.0",

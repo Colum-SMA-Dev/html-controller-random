@@ -5,6 +5,7 @@ _.mixin(require('lodash-deep'));
 var MediaObjectQueue = require('../src/media-object/media-object-queue');
 var assert = require('chai').assert;
 var chance = require('chance').Chance();
+var timer = require('timer-shim');
 var inherits = require('inherits');
 var MediaObject = require('../src/media-object/media-object');
 var TagMatcher = require('tag-matcher');
@@ -31,6 +32,7 @@ function makeScene (ops) {
             for (var i = 0; i < ops[type] || 0; i++) {
                 scene.push({
                     type: type,
+                    _id: chance.guid(),
                     url: chance.url()
                 });
             }    
@@ -40,7 +42,7 @@ function makeScene (ops) {
     
     return {
         name: chance.string(),
-        _id: chance.string(),
+        _id: chance.guid(),
         themes: {},
         scene: scene
     };
@@ -56,141 +58,96 @@ function moWithTags (type, tags) {
 
 describe('MediaObjectQueue', function () {
     beforeEach(function () {
-        this.queue = new MediaObjectQueue(
-            [FooMediaObject, BarMediaObject], 
-            {foo: 2, bar: 2}
-        );
+        timer.pause();
     });
 
+    afterEach(function () {
+        timer.resume();
+    });
 
-    describe('take() maximumOnScreen limits', function () {
+    describe('play()', function () {
         beforeEach(function () {
             var scene = makeScene({foo: 4});
-            scene.maximumOnScreen = {foo: 1};
+            scene.maximumOnScreen = {foo: 2};
+            this.queue = new MediaObjectQueue({foo: 2, bar: 2});
             this.queue.setScene(scene);
         });
 
-        it('should only return one mediaObject and then undefined', function () {
-            assert.instanceOf(this.queue.take([FooMediaObject]), FooMediaObject);
-            assert.isUndefined(this.queue.take([FooMediaObject]));
+        afterEach(function () {
+            this.queue.stop(); 
         });
 
-        it('should return a mediaObject once the count drops below the maximum', function () {
-            var self = this;
-            var mo = this.queue.take([FooMediaObject]);
-            mo.play();
-            
-            assert.isUndefined(this.queue.take([FooMediaObject]));
-            
-            mo.stop();
-            
-            assert.instanceOf(this.queue.take([FooMediaObject]), FooMediaObject);
+        it('should dispatch a show event immediately', function () {
+            var showCount = 0;
+            this.queue.on('show', function(mo) {
+                showCount++;
+            });
+
+            this.queue.play();
+            assert.strictEqual(showCount, 1);
+        });
+
+        it('should dispatch show events each displayInterval until maximumOnScreen is reached', function () {
+            var showCount = 0;
+            this.queue.on('show', function(mo) {
+                showCount++;
+            });
+
+            this.queue.play();
+            assert.strictEqual(showCount, 1);
+            timer.wind(this.queue.displayInterval);
+            assert.strictEqual(showCount, 2);
+            timer.wind(this.queue.displayInterval);
+            assert.strictEqual(showCount, 2);
+        });
+
+        it('should immediately dispatch a show event when a media object is transitioning', function () {
+            var shownMo,
+                showCount = 0;
+
+            this.queue.on('show', function(mo) {
+                showCount++;
+                shownMo = mo;
+            });
+
+            this.queue.play();
+            this.queue.mediaTransitioning(shownMo._id);
+            assert.strictEqual(showCount, 2);
         });
     });
 
-    describe('take() behavior with multiple types', function () {
+
+    describe('queue refilling behavior', function () {
         beforeEach(function () {
-            this.queue.setScene(makeScene({foo: 1, bar: 1}));
-        });
-
-        describe('take([type])', function () {
-            it('should return an object of single type if one is available', function () {
-                assert.instanceOf(this.queue.take([FooMediaObject]), FooMediaObject);
-                assert.instanceOf(this.queue.take([BarMediaObject]), BarMediaObject);
-            });
-
-            it('should return object that match one of any specified type when available', function () {
-                var types = [BarMediaObject, FooMediaObject];
-
-                _.forEach(types, function() {
-                    var mo = this.queue.take(types);
-                    if (! mo) {
-                        assert.fail('no matching media object found');
-                    }
-
-                    var matchedType = _.find(types, function(type) { return mo instanceof type; });
-                    if (! matchedType) {
-                        assert.fail('did not return a media object matching one of the types');
-                    }
-                }.bind(this));
-                    
-            });
-
-            it('should not return an object if all of that type have been taken', function () {
-                assert.instanceOf(this.queue.take([BarMediaObject]), BarMediaObject);
-                assert.isUndefined(this.queue.take([BarMediaObject]));
-            });
-        });
-    });
-
-    describe('filtering by type behavior with only 1 type', function () {
-        beforeEach(function () {
+            this.queue = new MediaObjectQueue({foo: 2, bar: 2});
             this.queue.setScene(makeScene({foo: 1}));
         });
 
-        describe('take()', function () {
-            it('should return requested type', function () {
-                assert.instanceOf(this.queue.take([FooMediaObject]), FooMediaObject);
+        afterEach(function () {
+            this.queue.stop();
+        });
+
+        it('should show the same mediaObject after it has stopped', function () {
+            var shownMos = [];
+
+            this.queue.on('show', function(mo) {
+                shownMos.push(mo);
             });
 
-            it('should return undefined when called with type not in scene', function () {
-                assert.isUndefined(this.queue.take([BarMediaObject]));
-            });
+            this.queue.play();
+            this.queue.mediaTransitioning(shownMos[0]._id);
+            this.queue.mediaDone(shownMos[0]._id);
+            timer.wind(this.queue.displayInterval);
+            assert.strictEqual(shownMos[0], shownMos[1]);
         });
     });
 
-    describe('queue refilling behavior with different types', function () {
-        beforeEach(function () {
-            this.queue.setScene(makeScene({foo: 1, bar: 2}));
-        });
-
-        describe('take()', function () {
-            it('should return the same mediaObject after it is stopped', function () {
-                var mo1 = this.queue.take([FooMediaObject]);
-                mo1.play();
-                mo1.stop();
-                
-                var mo2 = this.queue.take([FooMediaObject]);
-
-                assert.strictEqual(mo1, mo2);
-            });
-        });
-    });
-
-    describe('setScene(scene, {hardReset: true})', function () {
-        it('should transition out any active mediaObjects', function (done) {
-            this.queue.setScene(makeScene({foo: 2}));
-            var mo = this.queue.take([FooMediaObject]);
-            mo.play();
-            mo.on('transition', function() {
-                done();
-            });
-            this.queue.setScene(makeScene({foo: 2}), {hardReset: true});
-        });
-
-        it('should emit done any active mediaObjects', function (done) {
-            this.queue.setScene(makeScene({foo: 2}));
-            var mo = this.queue.take([FooMediaObject]);
-            mo.play();
-            mo.on('done', function() {
-                done();
-            });
-            this.queue.setScene(makeScene({foo: 2}), {hardReset: true});
-        });
-
-        it('should allow reset any maximumOnScreen limits', function () {
-            var scene = makeScene({foo: 2});
-            scene.maximumOnScreen = {foo: 1};
-            this.queue.setScene(scene);
-            var mo = this.queue.take([FooMediaObject]);
-            mo.play();
-
-            this.queue.setScene(scene, {hardReset: true});
-            assert(this.queue.take([FooMediaObject]));
-        });
-    });
 
     describe('scene attributes', function () {
+        beforeEach(function () {
+            this.queue = new MediaObjectQueue({foo: 2, bar: 2});
+        });
+
         function checkAttributes (expectedValues) {
             _.forEach(expectedValues, function(value, key) {
                 it('should default queue.' + key + ' to ' + value, function () {
@@ -236,72 +193,81 @@ describe('MediaObjectQueue', function () {
         
     });
 
-    describe('take() in conjuction with tagFiltering behavior', function () {
+    describe('tagFiltering behavior', function () {
         beforeEach(function () {
+            this.queue = new MediaObjectQueue({foo: 2, bar: 2});
+
             var scene = makeScene();
             scene.scene = [
                 moWithTags('foo', 'apples, bananas'),
-                moWithTags('foo', ''),
+                moWithTags('foo', 'apples'),
                 moWithTags('bar', 'apples')
             ];
 
             this.queue.setScene(scene);
         });
 
+        afterEach(function () {
+            this.queue.stop();
+        });
+
         var carrotsMatcher = new TagMatcher('carrots');
 
-        it('should not refill the queue with elements that dont match the active tagFilter', function () {
-            var mo = this.queue.take([BarMediaObject]);
-            mo.play();
+        it('should not fill the queue with media objects that dont match the active tagFilter', function () {
+            this.queue.play();
+            var shownMo;
+            this.queue.on('show', function(mo) {
+                shownMo = mo;
+            });
             this.queue.setTagMatcher(carrotsMatcher);
-            mo.stop();
+            timer.wind(this.queue.displayInterval);
             
-            assert.isUndefined(this.queue.take([BarMediaObject]));
+            assert.isUndefined(shownMo);
         });
 
 
-        it('should return nothing if tagMatcher matches nothing', function () {
+        it('should trigger a transition event for any non-matching media objects', function () {
+            var showId, transitionId;
+            this.queue.on('show', function(mo) {
+                showId = mo._id;
+            });
+            this.queue.on('transition', function(mo) {
+                transitionId = mo._id;
+            });
+            
+            this.queue.play();
             this.queue.setTagMatcher(carrotsMatcher);
-            assert.isUndefined(this.queue.take([FooMediaObject]));
-            assert.isUndefined(this.queue.take([BarMediaObject]));
+            assert.strictEqual(showId, transitionId);
         });
 
-    });
-
-    describe('setTagFilter()', function () {
-        beforeEach(function () {
-            var scene = makeScene();
-            scene.scene = [moWithTags('foo', 'apples')];
-            this.queue.setScene(scene);
-
-            this.mo = this.queue.take([FooMediaObject]);
-            this.mo.play();
-        });
-
-        it('should trigger "done" events on any currently playing mediaObjects that don\'t match', function (done) {
-            this.mo.on('done', function() {
-                done();
+        it('should not trigger transition events for any matching media objects that are playing', function () {
+            this.queue.play();
+            this.queue.on('transition', function(mo) {
+                assert.fail();
             });
 
-            this.queue.setTagMatcher(new TagMatcher('bananas'));
-        });
-
-        it('shouldn\'t trigger "done" events on playing mediaObjects that do match the new tagFilter', function () {
-            this.mo.on('done', function() {
-                assert.fail('done should not have been triggered');
-            });
-
+            this.queue.play();
             this.queue.setTagMatcher(new TagMatcher('apples'));
-        });
+        });        
     });
 
     describe('edge cases', function () {
         
         describe('no scene set', function () {
+            beforeEach(function () {
+                this.queue = new MediaObjectQueue({foo: 2, bar: 2});
+            });
+
+            afterEach(function () {
+                this.queue.stop(); 
+            });
         
-            describe('take()', function () {
-                it('should return undefined', function () {
-                    assert.isUndefined(this.queue.take('image'));
+            describe('play()', function () {
+                it('should not dispatch any show events', function () {
+                    this.queue.on('show', function(mo) {
+                        assert.fail();
+                    });
+                    this.queue.play();
                 });
             });
         });    

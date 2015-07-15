@@ -2,7 +2,12 @@
 
 var _ = require('lodash');
 var TagMatcher = require('tag-matcher');
+var EventEmitter = require('events').EventEmitter;
+var timer = require('timer-shim');
+var util = require('util');
 
+module.exports = MediaObjectQueue;
+util.inherits(MediaObjectQueue, EventEmitter);
 
 var SCENE_PROP_DEFAULTS = {
     displayInterval: 3,
@@ -10,11 +15,12 @@ var SCENE_PROP_DEFAULTS = {
     transitionDuration: 1.4
 };
 
+var queueCount = 0;
+
 /* 
-    types - Array of constructors
     defaultDisplayCounts - {typeName: num, typeName, num, ...}
 */
-function MediaObjectQueue(types, defaultDisplayCounts) {
+function MediaObjectQueue(defaultDisplayCounts) {
         // objects that are up for display
     var queue = [],
         // list of objects that are currently out on loan from the queue
@@ -22,39 +28,18 @@ function MediaObjectQueue(types, defaultDisplayCounts) {
         // all objects in the scene
         masterList = [],
         tagMatcher = new TagMatcher(),
-        maximumOnScreen = {};
+        maximumOnScreen = {},
+        // reference to the interval that triggers showing of media
+        showTimeout,
+        // array of string type names used in queue calculations
+        types = [],
+        // this referecence for private functions
+        self = this; 
+
+    this.queueCount = ++queueCount;
 
     function activeCount (typeName) {
-        return _.filter(active, function(mo) { return mo.constructor.typeName === typeName; }).length;
-    }
-
-    function moTransitionHandler (mediaObject) {
-        // pull it out of the active list
-        var activeIndex = _.findIndex(active, function(activeMo) { return activeMo === mediaObject; }); 
-        active.splice(activeIndex, 1);
-    }
-
-    function moDoneHandler (mediaObject) {
-        // make sure it's still in the masterList
-        if (_.find(masterList, function(mo) { return mediaObject === mo; })) {
-            if (tagMatcher.match(mediaObject.tags)) {
-                queue.push(mediaObject);        
-            }
-        // otherwise it's from an older scene, so remove any event listeners
-        } else {
-            mediaObject.removeListener('transition', moTransitionHandler);
-            mediaObject.removeListener('done', moDoneHandler);
-        }
-    }
-
-    function getTypeByName (typeName) {
-        var t = _.find(types, function(t) { return t.typeName === typeName; });
-
-        if (! t) {
-            throw 'type "' + typeName + '" not found.  Needs to be passed to constructor.';
-        }
-
-        return t;
+        return _.filter(active, function(mo) { return mo.type === typeName; }).length;
     }
 
     this.setScene = function(newScene, ops) {
@@ -89,29 +74,12 @@ function MediaObjectQueue(types, defaultDisplayCounts) {
             }
         }, {});
 
-        // unhook events from mediaobjects that aren't in the new scene
-        _.forEach(queue, function(mo) {
-            mo.removeListener('transition', moTransitionHandler);
-            mo.removeListener('done', moDoneHandler);
-        });
-
         // process the mediaObjects
         var newMo, 
             index,
             oldMo;
 
-        // make new masterList
-        masterList = _.map(newScene.scene, function(mo) {
-            var TypeConstructor = getTypeByName(mo.type);
-            newMo = new TypeConstructor(mo, {
-                displayDuration: this.displayDuration,
-                transitionDuration: this.transitionDuration
-            });
-            newMo.on('transition', moTransitionHandler);
-            newMo.on('done', moDoneHandler);
-            
-            return newMo;
-        }.bind(this));
+        masterList = _.clone(newScene.scene);
 
         // fill the queue with matching mediaObjects
         queue = _(masterList)
@@ -121,33 +89,49 @@ function MediaObjectQueue(types, defaultDisplayCounts) {
             .shuffle()
             .value();
 
+        // create an index of our types in the scene
+        types = _(newScene.scene)
+            .pluck('type')
+            .uniq()
+            .value();
+
         // transition out all active mediaObjects
         if (ops.hardReset) {
-            _.forEach(_.clone(active), function(activeMo) {
-                activeMo.transition();
-            });    
+            // _.forEach(_.clone(active), function(activeMo) {
+            //     activeMo.transition();
+            // });    
         }
         
     };
 
-    this.take = function(typesArray) {
+    function showNextMediaObject () {
+        // use timeouts so that showNextMediaObject can be called internally whenever 
+        // and it will handle rescheduling itself.
+        if (showTimeout) {
+            timer.clearTimeout(showTimeout);
+        }
+
+        if (self.displayInterval) {
+            showTimeout = timer.setTimeout(showNextMediaObject, self.displayInterval);    
+        }
+
         var activeSoloTypes = _(active)
             .filter(function(mo) {
-                return mo._obj.solo === true && mo._playing === true;
+                return mo.solo === true;
             })
             .map(function(mo) {
-                return mo.constructor;
+                return mo.type;
             }).value();
 
-        var eligibleTypes = _(typesArray)
+        var eligibleTypes = _(types)
             .filter(function(moType) {
-                return activeCount(moType.typeName) < maximumOnScreen[moType.typeName];
+                return activeCount(moType) < maximumOnScreen[moType];
             })
             .difference(activeSoloTypes).value();
 
         function checkType (obj) {
             return _.find(eligibleTypes, function(type) { 
-                return queue[i] instanceof type; 
+                return queue[i].type === type; 
             });
         }
 
@@ -162,24 +146,49 @@ function MediaObjectQueue(types, defaultDisplayCounts) {
 
                     // if the next mo in the queue is marked as solo, only give it back once
                     // all other active mo's of the same type are off the stage
-                    if (matchedMo._obj.solo !== true || (matchedMo._obj.solo === true && activeCount(matchedType.typeName) === 0)) {
+                    if (matchedMo.solo !== true || (matchedMo.solo === true && activeCount(matchedType) === 0)) {
                         queue.splice(i, 1);
                         active.push(matchedMo);
-
-                        // ensure it's set to be playing
-                        matchedMo._playing = true;
-
-                        return matchedMo;
-                    } else {
-                        // there is a solo waiting at the front of the queue
-                        // so return nothing and wait till next time
-                        return undefined;
+                        self.emit('show', matchedMo);
+                        // exit the loop after we found the first one
+                        return;
                     }
                 }    
             }     
         }
+        // body...
+    }
 
-        
+    this.play = function() {
+        showNextMediaObject();
+    };
+
+    this.stop = function () {
+        if (showTimeout) {
+            timer.clearTimeout(showTimeout);    
+        }
+    };
+
+    this.mediaTransitioning = function(moId) {
+        // pull it out of the active list
+        var activeIndex = _.findIndex(active, function(activeMo) { return activeMo._id === moId; }); 
+        active.splice(activeIndex, 1);
+
+        showNextMediaObject();
+    };
+
+    this.mediaDone = function(moId) {
+        // make sure it's still in the masterList
+        var masterMo = _.find(masterList, function(m) { return m._id === moId; });
+        // and make sure it's not in the queue.  This could happen if a Queue gets an identical
+        // scene set once after another.
+        var queueMo = _.find(queue, function(m) { return m._id === moId; });
+        if (masterMo && ! queueMo) {
+            // make sure it matches the current tagFilter
+            if (tagMatcher.match(masterMo.tags)) {
+                queue.push(masterMo);        
+            }
+        }
     };
 
     this.setTagMatcher = function(newTagMatcher) {
@@ -195,15 +204,13 @@ function MediaObjectQueue(types, defaultDisplayCounts) {
                 .shuffle()
                 .value();
 
-            // transition out currently playin non-matching videos
+            // transition out currently playin non-matching media objects
             _(active)
                 .filter(function(mo) {
                     return ! tagMatcher.match(mo.tags);
                 }).each(function(mo) {
-                    mo.transition();
+                    self.emit('transition', mo);
                 }).value();
         }
     };
 }
-
-module.exports = MediaObjectQueue;
