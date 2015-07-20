@@ -116,6 +116,28 @@ describe('MediaObjectQueue', function () {
         });
     });
 
+    describe('show event', function () {
+        beforeEach(function (done) {
+            var scene = makeScene({foo: 4});
+            scene.maximumOnScreen = {foo: 2};
+            this.queue = new MediaObjectQueue({foo: 2});
+            this.queue.setScene(scene);
+            this.queue.on('show', function(data) {
+                this.showEvent = data;
+                done();
+            });
+            this.queue.play();
+        });
+
+        afterEach(function () {
+            this.queue.stop(); 
+        });
+
+        it('should contain a media object to show', function () {
+            assert(this.showEvent.mediaObject);
+        });
+    });
+
 
     describe('queue refilling behavior', function () {
         beforeEach(function () {

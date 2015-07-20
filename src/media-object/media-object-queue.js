@@ -44,7 +44,6 @@ function MediaObjectQueue(defaultDisplayCounts) {
 
     this.setScene = function(newScene, ops) {
         ops = ops || {};
-        ops.hardReset = ops.hardReset || false;
 
         // process scene attributes
         var sceneVal;
@@ -94,14 +93,6 @@ function MediaObjectQueue(defaultDisplayCounts) {
             .pluck('type')
             .uniq()
             .value();
-
-        // transition out all active mediaObjects
-        if (ops.hardReset) {
-            // _.forEach(_.clone(active), function(activeMo) {
-            //     activeMo.transition();
-            // });    
-        }
-        
     };
 
     function showNextMediaObject () {
