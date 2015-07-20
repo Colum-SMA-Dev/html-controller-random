@@ -140,7 +140,9 @@ function MediaObjectQueue(defaultDisplayCounts) {
                     if (matchedMo.solo !== true || (matchedMo.solo === true && activeCount(matchedType) === 0)) {
                         queue.splice(i, 1);
                         active.push(matchedMo);
-                        self.emit('show', matchedMo);
+                        self.emit('show', {
+                            mediaObject: matchedMo
+                        });
                         // exit the loop after we found the first one
                         return;
                     }

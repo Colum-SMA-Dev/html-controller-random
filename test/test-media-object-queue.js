@@ -118,12 +118,13 @@ describe('MediaObjectQueue', function () {
 
     describe('show event', function () {
         beforeEach(function (done) {
+            var self = this;
             var scene = makeScene({foo: 4});
             scene.maximumOnScreen = {foo: 2};
             this.queue = new MediaObjectQueue({foo: 2});
             this.queue.setScene(scene);
             this.queue.on('show', function(data) {
-                this.showEvent = data;
+                self.showEvent = data;
                 done();
             });
             this.queue.play();
@@ -134,7 +135,7 @@ describe('MediaObjectQueue', function () {
         });
 
         it('should contain a media object to show', function () {
-            assert(this.showEvent.mediaObject);
+            assert.isObject(this.showEvent.mediaObject);
         });
     });
 
@@ -152,8 +153,8 @@ describe('MediaObjectQueue', function () {
         it('should show the same mediaObject after it has stopped', function () {
             var shownMos = [];
 
-            this.queue.on('show', function(mo) {
-                shownMos.push(mo);
+            this.queue.on('show', function(data) {
+                shownMos.push(data.mediaObject);
             });
 
             this.queue.play();
