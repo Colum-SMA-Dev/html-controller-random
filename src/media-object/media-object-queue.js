@@ -1,5 +1,6 @@
 'use strict';
 
+var debug = require('debug')('html-controller-random');
 var _ = require('lodash');
 var TagMatcher = require('tag-matcher');
 var EventEmitter = require('events').EventEmitter;
@@ -164,6 +165,7 @@ function MediaObjectQueue(defaultDisplayCounts) {
 
     this.mediaTransitioning = function(moId) {
         // pull it out of the active list
+        debug('mediaTransitioning called for ' + moId);
         var activeIndex = _.findIndex(active, function(activeMo) { return activeMo._id === moId; }); 
         active.splice(activeIndex, 1);
 
@@ -171,6 +173,7 @@ function MediaObjectQueue(defaultDisplayCounts) {
     };
 
     this.mediaDone = function(moId) {
+        debug('mediaDone called for ' + moId);
         // make sure it's still in the masterList
         var masterMo = _.find(masterList, function(m) { return m._id === moId; });
         // and make sure it's not in the queue.  This could happen if a Queue gets an identical

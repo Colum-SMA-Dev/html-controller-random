@@ -1,5 +1,6 @@
 'use strict';
 
+var debug = require('debug')('htmlcontrollerrandom');
 var htmlController = require('html-controller')();
 var MediaObjectQueue = require('./src/media-object/media-object-queue');
 var TextMediaObject = require('./src/media-object/text-media-object');
@@ -9,6 +10,7 @@ htmlController.on('connection', function(socket) {
     var mediaObjectQueue = new MediaObjectQueue({image: 3, text: 1});
 
     mediaObjectQueue.on('show', function(data) {
+        debug('showMedia sending', data);
         socket.emit('showMedia', data);
     });
 
