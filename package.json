@@ -1,5 +1,5 @@
 {
-  "name": "html-controller-random",
+  "name": "media-frameworks-html-controller-random",
   "version": "1.0.0",
   "description": "Subset of the html-controller that triggers a \"humanized\" random display of media objects",
   "main": "app.js",
@@ -8,17 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Colum-SMA-Dev/html-controller-random.git"
+    "url": "https://github.com/Colum-SMA-Dev/media-frameworks-html-controller-random.git"
   },
   "author": "Matt Schick <matt@schickm.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Colum-SMA-Dev/html-controller-random/issues"
+    "url": "https://github.com/Colum-SMA-Dev/media-frameworks-html-controller-random/issues"
   },
-  "homepage": "https://github.com/Colum-SMA-Dev/html-controller-random",
+  "homepage": "https://github.com/Colum-SMA-Dev/media-frameworks-html-controller-random",
   "dependencies": {
     "debug": "^2.2.0",
-    "html-controller": "git://github.com/Colum-SMA-Dev/html-controller",
+    "media-frameworks-html-controller": "git://github.com/Colum-SMA-Dev/media-frameworks-html-controller",
     "inherits": "^2.0.1",
     "lodash": "^3.10.0",
     "tag-matcher": "git://github.com/Colum-SMA-Dev/tag-matcher",
