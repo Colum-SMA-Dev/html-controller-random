@@ -16,6 +16,7 @@ class Namespace(BaseNamespace):
         moId = mo['_id']
         data = mo['url'] if hasattr(mo, 'url') else mo['text']
         print 'showMedia event recieved for "' + data + '"'
+        print showEvent
         # print mediaObject
         self.emit('mediaTransitioning', moId)
         self.emit('mediaDone', moId)
@@ -32,5 +33,5 @@ class Namespace(BaseNamespace):
 
 
 socketIO = SocketIO('localhost', 7000, Namespace)
-socketIO.wait(seconds=20)
+socketIO.wait(seconds=10)
 
