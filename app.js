@@ -1,7 +1,7 @@
 'use strict';
 
 var debug = require('debug')('html-controller-random');
-var htmlController = require('html-controller')();
+var htmlController = require('media-frameworks-html-controller')();
 var MediaObjectQueue = require('./src/media-object/media-object-queue');
 var TextMediaObject = require('./src/media-object/text-media-object');
 var ImageMediaObject = require('./src/media-object/image-media-object');
