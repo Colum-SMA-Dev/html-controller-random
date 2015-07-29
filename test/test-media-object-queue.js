@@ -139,7 +139,11 @@ describe('MediaObjectQueue', function () {
         });
 
         it('should contain a displayDuration', function () {
-           assert.isNumber(this.showEvent.displayDuration); 
+            assert.isNumber(this.showEvent.displayDuration); 
+        });
+
+        it('should contain a transitionDuration', function () {
+            assert.isNumber(this.showEvent.transitionDuration);  
         });
     });
 

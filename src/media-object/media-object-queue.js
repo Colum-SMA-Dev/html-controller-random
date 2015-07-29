@@ -143,7 +143,8 @@ function MediaObjectQueue(defaultDisplayCounts) {
                         active.push(matchedMo);
                         self.emit('show', {
                             mediaObject: matchedMo,
-                            displayDuration: self.displayDuration
+                            displayDuration: self.displayDuration,
+                            transitionDuration: self.transitionDuration
                         });
                         // exit the loop after we found the first one
                         return;

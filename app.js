@@ -7,7 +7,7 @@ var TextMediaObject = require('./src/media-object/text-media-object');
 var ImageMediaObject = require('./src/media-object/image-media-object');
 
 htmlController.on('connection', function(socket) {
-    var mediaObjectQueue = new MediaObjectQueue({image: 3, text: 1});
+    var mediaObjectQueue = new MediaObjectQueue({image: 3, text: 1, video: 1, audio: 2});
 
     mediaObjectQueue.on('show', function(data) {
         debug('showMedia sending', data);
