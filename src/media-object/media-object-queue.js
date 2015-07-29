@@ -148,6 +148,9 @@ function MediaObjectQueue(defaultDisplayCounts) {
                         });
                         // exit the loop after we found the first one
                         return;
+                    } else if (matchedMo.solo === true) {
+                        // force exit the loop if we're waiting on a solo that hasn't played yet
+                        return;
                     }
                 }    
             }     
