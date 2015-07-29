@@ -137,6 +137,10 @@ describe('MediaObjectQueue', function () {
         it('should contain a media object to show', function () {
             assert.isObject(this.showEvent.mediaObject);
         });
+
+        it('should contain a displayDuration', function () {
+           assert.isNumber(this.showEvent.displayDuration); 
+        });
     });
 
 
