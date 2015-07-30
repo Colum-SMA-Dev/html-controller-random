@@ -5,35 +5,35 @@ Subset of the html-controller that triggers a "humanized" random display of medi
 A typical flow of messages between a client and controller would like this:
 
 ```
-Client                                   Controller
+          Client                                          Controller
 
-playScene, "aonthao23244"     --------->   Controller gets scene from hub
+"playScene, 'aonthao23244'"     ---------> Controller gets scene from hub
                                                     |
                                                     V
-Client displays mediaObject 1 <--------- showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 1, ...}
-Client displays mediaObject 2 <--------- showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 2, ...}
+Client displays mediaObject 1   <--------- "showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 1, ...}"
+Client displays mediaObject 2   <--------- "showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 2, ...}"
           |
           V
  Client begins to transition out media 1
           |
           V
-mediaTransitioning, 1         ----------->  Controller checks to see if it can send another piece of media
+"mediaTransitioning, 1"         ---------> Controller checks to see if it can send another piece of media
                                                       |
                                                       V
-Client displays mediaObject 3 <--------- showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 3, ...}
+Client displays mediaObject 3   <--------- "showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 3, ...}"
             
 Client completes transition off of mediaObject 1
            |
            V
-mediaDone, 2                -----------> Controller puts mediaObject 1 back in the queue of media to show
+"mediaDone, 2"                  ---------> Controller puts mediaObject 1 back in the queue of media to show
 
 Client begins to transition out media 2
           |
           V
-mediaTransitioning, 2       ----------->  Controller checks to see if it can send another piece of media
+"mediaTransitioning, 2"         --------->  Controller checks to see if it can send another piece of media
                                                       |
                                                       V
-Client displays mediaObject 1 <--------- showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 1, ...}
+Client displays mediaObject 1   <--------- "showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 1, ...}"
 ```
 
 
