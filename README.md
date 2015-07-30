@@ -34,7 +34,7 @@ Start up the server like so
 
 ## Deployment
 
-Follow all of the development steps.  However, depending on your hosting environment, it may make more sense to configure the environment variable through their UI.
+Follow all of the development steps.  However, depending on your hosting environment, it may make more sense to configure the environment variables through their UI rather than the `env.sh` shell script.
 
 ## API
 
