@@ -7,9 +7,9 @@ API functionality is inherited from [media-frameworks-html-controller](https://g
 
 ### Client Initiated Messages
 
-#### play
+#### playScene
 
-`"play", "<id of scene>"`
+`"playScene", "<id of scene>", callback(error)`
 
 Tells the controller to begin playing a specific scene.  The controller will sending `showMedia` messages to the client.
 
@@ -24,3 +24,15 @@ Client is beginning to transition out a piece of media.  Clients should send thi
 `"mediaDone", "<id of media object>"`
 
 Client has completed the transitioning of a piece of media.  This will allow the controller to send that media object out again at a later time.  If this message is never sent to the controller, then that media object will never be redisplayed in the future.
+
+### Controller Initiated Messages
+
+#### showMedia
+
+`"showMedia", data`
+
+Message sent to the client containing a media object and how to display it.  `data` is an object containing the following properties:
+
+* `mediaObject` - An object describing a piece of media.  Refer to the [media-scene-schema.json](https://github.com/Colum-SMA-Dev/MediaHub/blob/master/docs/media-scene-schema.json) for more information
+* `transitionDuration` - Advised number of seconds that the piece of media should take to be transitioned on/off the client
+* `displayDuration` - Advised number of seconds the media should be displayed for.  This can be disregarded with no harm to client/controller interaction
