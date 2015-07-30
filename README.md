@@ -14,6 +14,10 @@ mediaTransitioning, 1 |
 | showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 3, ...} 
 mediaDone, 1 |
 mediaTransitioning, 2 |
+| showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 1, ...} 
+mediaDone, 2 |
+
+and on and on...
 
 
 ## Development
