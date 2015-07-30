@@ -22,7 +22,7 @@ htmlController.on('connection', function(socket) {
                 }
             } else if (! scene) {
                 if (callback) {
-                    callback('requested sceneId of "' + sceneId + '" could not be found');
+                    callback('requested sceneId of "' + sceneId + '" could not be found'); 
                 }
             } else {
                 mediaObjectQueue.setScene(scene);
