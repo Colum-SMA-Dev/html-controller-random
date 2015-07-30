@@ -24,7 +24,7 @@ htmlController.on('connection', function(socket) {
             }
         });
     });
-
+    
     socket.on('mediaTransitioning', mediaObjectQueue.mediaTransitioning.bind(mediaObjectQueue));
     socket.on('mediaDone', mediaObjectQueue.mediaDone.bind(mediaObjectQueue));
 });
