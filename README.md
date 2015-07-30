@@ -1,6 +1,41 @@
 # media-frameworks-html-controller-random [![Build Status](https://travis-ci.org/Colum-SMA-Dev/media-frameworks-html-controller-random.svg?branch=master)](https://travis-ci.org/Colum-SMA-Dev/media-frameworks-html-controller-random)
 Subset of the html-controller that triggers a "humanized" random display of media objects
 
+## Development
+
+After cloning the repository, install the dependencies:
+
+```
+npm install
+```
+
+Copy the example environment file and edit as you'd like.  
+
+```
+cp env-example.sh env.sh
+```
+
+Here's what they do:
+* `HUB_PASSWORD` - Password to connect to the [MediaHub](https://github.com/Colum-SMA-Dev/MediaHub) with
+* `HUB_URL` - Url where the [MediaHub](https://github.com/Colum-SMA-Dev/MediaHub) can be reached 
+* `PORT` - Port that the controller should listen for clients on
+
+Make it executable
+
+```
+chmod 755 env.sh
+```
+
+Start up the server like so
+
+```
+./env.sh node app.js
+```
+
+## Deployment
+
+Follow all of the development steps.  However, depending on your hosting environment, it may make more sense to configure the environment variable through their UI.
+
 ## API
 
 API functionality is inherited from [media-frameworks-html-controller](https://github.com/Colum-SMA-Dev/media-frameworks-html-controller).  Refer to [it's api documentation](https://github.com/Colum-SMA-Dev/media-frameworks-html-controller#api) for those.
