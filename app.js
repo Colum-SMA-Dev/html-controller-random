@@ -17,14 +17,20 @@ htmlController.on('connection', function(socket) {
     socket.on('playScene', function(sceneId, callback) {
         htmlController.hub.emit('loadScene', sceneId, function(err, scene) {
             if (err) {
-                callback(err);
+                if (callback) {
+                    callback(err);                    
+                }
+            } else if (! scene) {
+                if (callback) {
+                    callback('requested sceneId of "' + sceneId + '" could not be found');
+                }
             } else {
                 mediaObjectQueue.setScene(scene);
                 mediaObjectQueue.play();          
             }
         });
     });
-    
+
     socket.on('mediaTransitioning', mediaObjectQueue.mediaTransitioning.bind(mediaObjectQueue));
     socket.on('mediaDone', mediaObjectQueue.mediaDone.bind(mediaObjectQueue));
 });
