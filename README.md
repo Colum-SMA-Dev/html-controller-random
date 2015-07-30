@@ -25,7 +25,7 @@ Client displays mediaObject 3   <--------- "showMedia, {transitionDuration: 2.5,
 Client completes transition off of mediaObject 1
            |
            V
-"mediaDone, 2"                  ---------> Controller puts mediaObject 1 back in the queue of media to show
+"mediaDone, 1"                  ---------> Controller puts mediaObject 1 back in the queue of media to show
 
 Client begins to transition out media 2
           |
@@ -35,7 +35,6 @@ Client begins to transition out media 2
                                                       V
 Client displays mediaObject 1   <--------- "showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 1, ...}"
 ```
-
 
 and on and on...
 
