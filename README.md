@@ -1,5 +1,20 @@
 # media-frameworks-html-controller-random [![Build Status](https://travis-ci.org/Colum-SMA-Dev/media-frameworks-html-controller-random.svg?branch=master)](https://travis-ci.org/Colum-SMA-Dev/media-frameworks-html-controller-random)
+
 Subset of the html-controller that triggers a "humanized" random display of media objects
+
+A typical flow of messages between a client and controller would like this:
+
+Client | Controller
+-------|----------
+Open socket connection | 
+playScene, "aonthao23244" | 
+ | showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 1, ...} 
+ | showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 2, ...} 
+mediaTransitioning, 1 |
+| showMedia, {transitionDuration: 2.5, displayDuration: 10, mediaObject {_id: 3, ...} 
+mediaDone, 1 |
+mediaTransitioning, 2 |
+
 
 ## Development
 
