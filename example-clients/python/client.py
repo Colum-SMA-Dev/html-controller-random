@@ -17,7 +17,6 @@ class Namespace(BaseNamespace):
         data = mo['url'] if hasattr(mo, 'url') else mo['text']
         print 'showMedia event recieved for "' + data + '"'
         print showEvent
-        # print mediaObject
         self.emit('mediaTransitioning', moId)
         self.emit('mediaDone', moId)
         sleep(1)
